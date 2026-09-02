@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import multer from 'multer';
+import Clothing from '../models/Clothing.js';
+import { protect } from '../middleware/auth.js';
+const router=Router(); const upload=multer({dest:'uploads/',limits:{fileSize:10*1024*1024},fileFilter:(_,file,cb)=>cb(null,['image/jpeg','image/png','image/webp'].includes(file.mimetype))});
+router.get('/',async(req,res,next)=>{try{const {search,category,size,condition,location,sort='createdAt'}=req.query;const query={status:'available'};if(search)query.$or=[{title:new RegExp(search,'i')},{brand:new RegExp(search,'i')}];if(category)query.category=category;if(size)query.size=size;if(condition)query.condition=condition;if(location)query.location=new RegExp(location,'i');res.json(await Clothing.find(query).populate('owner','name location profileImage').sort(sort==='value'?{estimatedValue:1}:{createdAt:-1}));}catch(e){next(e)}});
+router.post('/',protect,upload.single('image'),async(req,res,next)=>{try{const item=await Clothing.create({...req.body,estimatedValue:Number(req.body.estimatedValue),owner:req.user.id,image:req.file?.path});res.status(201).json(item)}catch(e){next(e)}});
+router.patch('/:id',protect,async(req,res,next)=>{try{const item=await Clothing.findOneAndUpdate({_id:req.params.id,owner:req.user.id},req.body,{new:true,runValidators:true});if(!item)return res.status(404).json({message:'Listing not found'});res.json(item)}catch(e){next(e)}});
+router.delete('/:id',protect,async(req,res,next)=>{try{const item=await Clothing.findOneAndDelete({_id:req.params.id,owner:req.user.id});if(!item)return res.status(404).json({message:'Listing not found'});res.status(204).end()}catch(e){next(e)}});
+export default router;

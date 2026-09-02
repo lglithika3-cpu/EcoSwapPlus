@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import User from '../models/User.js';
+import Clothing from '../models/Clothing.js';
+import SwapRequest from '../models/SwapRequest.js';
+import { protect, adminOnly } from '../middleware/auth.js';
+const router = Router();
+router.use(protect, adminOnly);
+router.get('/summary', async (_req, res, next) => { try { const [users, listings, swaps, reports] = await Promise.all([User.countDocuments(), Clothing.countDocuments({ status: 'available' }), SwapRequest.countDocuments(), Promise.resolve(0)]); res.json({ users, listings, swaps, reports }); } catch (error) { next(error); } });
+router.delete('/listings/:id', async (req, res, next) => { try { const listing = await Clothing.findByIdAndUpdate(req.params.id, { status: 'swapped' }, { new: true }); if (!listing) return res.status(404).json({ message: 'Listing not found' }); res.json({ message: 'Listing removed', listing }); } catch (error) { next(error); } });
+export default router;
