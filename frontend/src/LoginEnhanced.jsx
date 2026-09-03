@@ -11,12 +11,19 @@ const copy = {
 
 export default function LoginEnhanced({ onLogin }) {
   const { login } = useAuth();
+  const { register } = useAuth();
+  const [mode, setMode] = useState('login');
   const [language, setLanguage] = useState('en');
   const [account, setAccount] = useState('lithika');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [location, setLocation] = useState('Chennai, Tamil Nadu');
   const [password, setPassword] = useState('ecoswap-demo');
   const [error, setError] = useState('');
   const text = copy[language];
-  const data = account === 'lithika'
+  const data = mode === 'signup'
+    ? { name: name.trim(), email: email.trim().toLowerCase(), location }
+    : account === 'lithika'
     ? { name: 'L G Lithika', email: 'demo@ecoswap.plus', location: 'Chennai, Tamil Nadu' }
     : { name: 'Amara M.', email: 'amara@ecoswap.plus', location: 'Adyar, Chennai' };
 
@@ -24,7 +31,11 @@ export default function LoginEnhanced({ onLogin }) {
     event.preventDefault();
     setError('');
     try {
-      await login({ email: data.email, password });
+      if (mode === 'signup') {
+        if (data.name.length < 2 || data.name.length > 80) throw new Error('Please enter your full name.');
+        if (password.length < 8) throw new Error('Password must be at least 8 characters.');
+        await register({ ...data, password });
+      } else await login({ email: data.email, password });
     } catch (apiError) {
       if (password === 'ecoswap-demo') onLogin(data);
       else setError(apiError.message || 'Unable to sign in');
@@ -39,13 +50,14 @@ export default function LoginEnhanced({ onLogin }) {
     </div>
     <form className="auth-form" onSubmit={submit}>
       <div className="auth-form-top"><p className="eyebrow">{text.eyebrow}</p><label className="language-select"><span>Language</span><select value={language} onChange={event => setLanguage(event.target.value)} aria-label="Select language"><option value="en">{copy.en.language}</option><option value="ta">{copy.ta.language}</option><option value="hi">{copy.hi.language}</option></select></label></div>
-      <h2>{text.title}</h2>
-      <div className="account-switch"><button type="button" className={account === 'lithika' ? 'selected' : ''} onClick={() => setAccount('lithika')}>User A · Lithika</button><button type="button" className={account === 'amara' ? 'selected' : ''} onClick={() => setAccount('amara')}>User B · Amara</button></div>
-      <label>{text.email}<input value={data.email} readOnly /></label>
+      <h2>{mode === 'signup' ? 'Create your account.' : text.title}</h2>
+      <div className="auth-mode-switch"><button type="button" className={mode === 'login' ? 'selected' : ''} onClick={() => setMode('login')}>Sign in</button><button type="button" className={mode === 'signup' ? 'selected' : ''} onClick={() => setMode('signup')}>Create account</button></div>
+      {mode === 'login' ? <div className="account-switch"><button type="button" className={account === 'lithika' ? 'selected' : ''} onClick={() => setAccount('lithika')}>User A · Lithika</button><button type="button" className={account === 'amara' ? 'selected' : ''} onClick={() => setAccount('amara')}>User B · Amara</button></div> : <><label>Full name<input value={name} onChange={event => setName(event.target.value)} required /></label><label>Location<input value={location} onChange={event => setLocation(event.target.value)} required /></label></>}
+      <label>{text.email}<input value={data.email} onChange={event => setEmail(event.target.value)} readOnly={mode === 'login'} required /></label>
       <label>{text.password}<input type="password" value={password} onChange={event => setPassword(event.target.value)} required /></label>
       <div className="security-grid"><div><LockKeyhole size={16} /><span><b>{text.encrypted}</b><small>{text.encryptedText}</small></span></div><div><ShieldCheck size={16} /><span><b>{text.secure}</b><small>{text.secureText}</small></span></div></div>
       {error && <p className="form-error">{error}</p>}
-      <button className="button dark-button full-button">{text.submit} <ChevronRight size={16} /></button>
+      <button className="button dark-button full-button">{mode === 'signup' ? 'Create account securely' : text.submit} <ChevronRight size={16} /></button>
       <p className="privacy-note"><b>{text.privacy}</b> {text.privacyText}</p><p className="auth-legal">{text.footer}</p>
     </form>
   </div>;
