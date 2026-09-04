@@ -8,7 +8,7 @@ export function MarketplaceProvider({ children }) {
   const [requests, setRequests] = useState(starterRequests);
   const [messages, setMessages] = useState([{ id: 1, sender: 'Amara M.', content: 'Hey Lithika! I love your linen shirt. Would you be open to swapping for the corduroy overshirt?', time: '10:42' }, { id: 2, sender: 'L G Lithika', content: 'Hi Amara, the shirt is one of my favourites. I think a swap could work. Want to meet Thursday?', time: '10:44' }]);
   const [impact, setImpact] = useState({ swapsCompleted: 12, waterSaved: 84000, carbonReduced: 180, pointsEarned: 1240, wasteReduced: 12.6 });
-  const addListing = listing => setListings(current => [{ ...listing, id: `user-${Date.now()}`, owner: 'L G Lithika', location: listing.location || 'Chennai', image: listing.image || 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=900&q=85' }, ...current]);
+  const addListing = listing => setListings(current => [{ ...listing, id: `user-${Date.now()}`, owner: 'L G Lithika', location: listing.location || 'Chennai', image: listing.image || '/assets/clothing-placeholder.svg' }, ...current]);
   const updateListing = (id, changes) => setListings(current => current.map(item => item.id === id ? { ...item, ...changes } : item));
   const deleteListing = id => setListings(current => current.filter(item => item.id !== id));
   const sendSwap = ({ requestedItem, offeredItem }) => setRequests(current => [{ id: `swap-${Date.now()}`, sender: 'L G Lithika', receiver: requestedItem.owner, offeredItem: offeredItem.title, requestedItem: requestedItem.title, status: 'pending', compatibilityScore: Math.max(70, 100 - Math.abs(offeredItem.value - requestedItem.value) * 2), createdAt: 'Just now' }, ...current]);
