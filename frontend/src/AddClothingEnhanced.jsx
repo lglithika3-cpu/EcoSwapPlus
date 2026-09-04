@@ -22,7 +22,7 @@ export default function AddClothingEnhanced({ notify }) {
         Object.entries({ ...form, estimatedValue: form.value }).forEach(([key, value]) => body.append(key, value));
         if (file) body.append('image', file);
         const saved = await api.createListing(body);
-        addListing({ ...form, value: saved.estimatedValue, image: saved.image ? `${API_ORIGIN}/${saved.image.replaceAll('\\','/')}` : undefined });
+        addListing({ ...form, id: saved._id, value: saved.estimatedValue, image: saved.image ? `${API_ORIGIN}/${saved.image.replaceAll('\\','/')}` : undefined });
       } else addListing({ ...form, value: Number(form.value) });
       setForm(initialForm); setFile(null); notify('Item added to your active closet');
     } catch (submitError) { setError(submitError.message || 'Unable to publish listing'); }
