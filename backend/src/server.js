@@ -21,7 +21,22 @@ app.use('/api/auth',authRoutes); app.use('/api/clothing',clothingRoutes); app.us
 app.use('/api/messages',messageRoutes); app.use('/api/leaderboard',leaderboardRoutes); app.use('/api/admin',adminRoutes);
 app.use('/api/wishlist',wishlistRoutes); app.use('/api/reviews',reviewRoutes);
 app.use((err,_req,res,_next)=>{console.error(err);res.status(err.status||500).json({message:err.message||'Server error'})});
-const port=process.env.PORT||5000;
-const mongoUri=process.env.MONGO_URI||process.env.MONGODB_URI;
-if(mongoUri) mongoose.connect(mongoUri).then(()=>app.listen(port,()=>console.log(`EcoSwap+ API listening on ${port}`))).catch(err=>{console.error('MongoDB connection failed',err);process.exit(1)}); else app.listen(port,()=>console.log(`EcoSwap+ API listening on ${port} (MongoDB disabled)`));
+const port = process.env.PORT || 5000;
+const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+async function startServer() {
+  try {
+    if (!mongoUri) {
+      throw new Error('MONGO_URI or MONGODB_URI is not configured');
+    }
+    await mongoose.connect(mongoUri);
+    console.log('MongoDB connected successfully');
+    app.listen(port, '0.0.0.0', () => {
+      console.log(`EcoSwap+ API listening on ${port}`);
+    });
+  } catch (error) {
+    console.error('MongoDB connection failed:', error.message);
+    process.exit(1);
+  }
+}
+startServer();
 export default app;
